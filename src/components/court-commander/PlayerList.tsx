@@ -9,6 +9,7 @@ import { PlusCircle, Users } from "lucide-react";
 import { PlayerCard } from "./PlayerCard";
 import { PlayerFormDialog } from "./PlayerFormDialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { TooltipProvider } from "@/components/ui/tooltip"; // Added import
 
 interface PlayerListProps {
   players: Player[];
@@ -67,7 +68,7 @@ export function PlayerList({
   };
 
   return (
-    <Card className="w-full md:w-80 shadow-xl md:h-full flex flex-col">
+    <Card className="w-full md:w-72 lg:w-80 md:flex-shrink-0 h-auto md:h-full flex flex-col shadow-xl">
       <CardHeader className="flex flex-row items-center justify-between p-4 border-b">
         <div className="flex items-center space-x-2">
           <Users className="h-6 w-6 text-primary" />
@@ -83,28 +84,30 @@ export function PlayerList({
         onDragOver={handleDragOver}
         onDrop={onDropInPlayerList}
       >
-        <ScrollArea className="h-full">
-          {players.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-4">
-              No players yet. Click the '+' to add one!
-            </p>
-          ) : (
-            <div className="space-y-2">
-              {players.map((player) => (
-                <PlayerCard
-                  key={player.id}
-                  player={player}
-                  draggable
-                  onDragStart={(e) => handlePlayerCardDragStart(e, player)}
-                  onEdit={handleEditPlayer}
-                  onDelete={onDeletePlayer}
-                  totalPlayingTime={getPlayerTotalTime(player.id)}
-                  isOnCourt={onCourtPlayerIds.has(player.id)} // Pass isOnCourt status
-                />
-              ))}
-            </div>
-          )}
-        </ScrollArea>
+        <TooltipProvider> {/* Added TooltipProvider wrapper */}
+          <ScrollArea className="h-full">
+            {players.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-4">
+                No players yet. Click the '+' to add one!
+              </p>
+            ) : (
+              <div className="space-y-2">
+                {players.map((player) => (
+                  <PlayerCard
+                    key={player.id}
+                    player={player}
+                    draggable
+                    onDragStart={(e) => handlePlayerCardDragStart(e, player)}
+                    onEdit={handleEditPlayer}
+                    onDelete={onDeletePlayer}
+                    totalPlayingTime={getPlayerTotalTime(player.id)}
+                    isOnCourt={onCourtPlayerIds.has(player.id)} // Pass isOnCourt status
+                  />
+                ))}
+              </div>
+            )}
+          </ScrollArea>
+        </TooltipProvider> {/* End TooltipProvider wrapper */}
       </CardContent>
 
       <PlayerFormDialog
