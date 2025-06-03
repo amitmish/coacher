@@ -18,6 +18,7 @@ interface PlayerListProps {
   onPlayerDragStart: (e: React.DragEvent<HTMLDivElement>, playerInfo: DraggedPlayerInfo) => void;
   onDropInPlayerList: (e: React.DragEvent<HTMLDivElement>) => void;
   getPlayerTotalTime: (playerId: string) => number;
+  onCourtPlayerIds: Set<string>; // New prop
 }
 
 export function PlayerList({
@@ -28,6 +29,7 @@ export function PlayerList({
   onPlayerDragStart,
   onDropInPlayerList,
   getPlayerTotalTime,
+  onCourtPlayerIds, // New prop
 }: PlayerListProps) {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingPlayer, setEditingPlayer] = useState<Player | null>(null);
@@ -97,6 +99,7 @@ export function PlayerList({
                   onEdit={handleEditPlayer}
                   onDelete={onDeletePlayer}
                   totalPlayingTime={getPlayerTotalTime(player.id)}
+                  isOnCourt={onCourtPlayerIds.has(player.id)} // Pass isOnCourt status
                 />
               ))}
             </div>

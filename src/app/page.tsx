@@ -23,6 +23,7 @@ export default function CourtCommanderPage() {
     unassignPlayerSegment,
     updatePlayerMinutesInSegment,
     getPlayerTotalTime,
+    getCurrentlyOnCourtPlayerIds, // New function from hook
     saveCurrentGamePlanAs,
     updateGamePlanName,
     loadGamePlan,
@@ -47,7 +48,7 @@ export default function CourtCommanderPage() {
       draggedInfo.playerId,
       targetQuarter,
       targetPositionIndex,
-      draggedInfo // Pass the full draggedInfo object
+      draggedInfo 
     );
   };
 
@@ -70,6 +71,8 @@ export default function CourtCommanderPage() {
     window.print();
   };
 
+  const onCourtPlayerIds = currentPlan ? getCurrentlyOnCourtPlayerIds() : new Set<string>();
+
   if (isLoading || !currentPlan) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-background">
@@ -80,7 +83,7 @@ export default function CourtCommanderPage() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen p-2 sm:p-4 bg-background text-foreground"> {/* Changed h-screen to min-h-screen */}
+    <div className="flex flex-col min-h-screen p-2 sm:p-4 bg-background text-foreground"> 
       <header className="mb-2 sm:mb-4 no-print">
         <div className="flex items-center space-x-2">
           <InlineBasketballIcon className="h-7 w-7 sm:h-8 sm:w-8 text-primary" />
@@ -112,7 +115,7 @@ export default function CourtCommanderPage() {
             <TabsTrigger value="players">Players ({players.length})</TabsTrigger>
             <TabsTrigger value="timeline">Timeline</TabsTrigger>
           </TabsList>
-          <TabsContent value="players" className="flex-grow overflow-auto pt-2 pb-12"> {/* Added pb for scroll room */}
+          <TabsContent value="players" className="flex-grow overflow-auto pt-2 pb-12"> 
             <PlayerList
               players={players}
               onAddPlayer={addPlayer}
@@ -121,9 +124,10 @@ export default function CourtCommanderPage() {
               onPlayerDragStart={handlePlayerDragStart}
               onDropInPlayerList={handleDropInPlayerList}
               getPlayerTotalTime={getPlayerTotalTime}
+              onCourtPlayerIds={onCourtPlayerIds} // Pass the set of on-court player IDs
             />
           </TabsContent>
-          <TabsContent value="timeline" className="flex-grow overflow-auto pt-2 pb-12"> {/* Added pb for scroll room */}
+          <TabsContent value="timeline" className="flex-grow overflow-auto pt-2 pb-12"> 
             <GameTimeline
               schedule={schedule}
               allPlayers={players}
@@ -136,9 +140,8 @@ export default function CourtCommanderPage() {
       </div>
 
       {/* Desktop Side-by-Side View */}
-      {/* Removed overflow-hidden from main to allow page scroll if content is tall */}
       <main className="hidden md:flex flex-grow gap-3 sm:gap-4 mt-3 sm:mt-4 printable-area">
-        <div className="md:w-72 lg:w-80 md:flex-shrink-0 h-full"> {/* PlayerList wrapper height is relative to main */}
+        <div className="md:w-72 lg:w-80 md:flex-shrink-0 h-full"> 
           <PlayerList
             players={players}
             onAddPlayer={addPlayer}
@@ -147,9 +150,9 @@ export default function CourtCommanderPage() {
             onPlayerDragStart={handlePlayerDragStart}
             onDropInPlayerList={handleDropInPlayerList}
             getPlayerTotalTime={getPlayerTotalTime}
+            onCourtPlayerIds={onCourtPlayerIds} // Pass the set of on-court player IDs
           />
         </div>
-        {/* Removed overflow-hidden and h-full from GameTimeline wrapper to allow it to grow */}
         <div className="flex-grow"> 
           <GameTimeline
             schedule={schedule}

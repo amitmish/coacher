@@ -11,7 +11,7 @@ import {
   onValue,
   set,
   remove,
-  serverTimestamp // For potential future use
+  // serverTimestamp // For potential future use
 } from "firebase/database";
 
 const GAME_PLANS_PATH = "gamePlans"; // Path in Realtime Database
@@ -112,7 +112,7 @@ export function useCourtCommander() {
   const currentPlan = useMemo(() => {
     if (!currentPlanId || gamePlans.length === 0) return null;
     const foundPlan = gamePlans.find(p => p.id === currentPlanId);
-    return foundPlan ? migratePlanStructure(foundPlan) : null; // Ensure structure is always migrated
+    return foundPlan ? migratePlanStructure(foundPlan) : null; 
   }, [gamePlans, currentPlanId]);
 
   useEffect(() => {
@@ -133,13 +133,12 @@ export function useCourtCommander() {
         const initialPlan = createNewGamePlanObject("Default Plan");
         try {
           await set(ref(db, `${GAME_PLANS_PATH}/${initialPlan.id}`), initialPlan);
-          // setCurrentPlanId will be handled by the next onValue call or the logic below
         } catch (error) {
           console.error("Failed to create initial plan:", error);
           toast({ title: "Error", description: "Could not create initial game plan.", variant: "destructive"});
         }
       } else if (!currentPlanId || !loadedPlans.some(p => p.id === currentPlanId)) {
-        setCurrentPlanId(loadedPlans[0]?.id || null); // Fallback to null if loadedPlans[0] is undefined
+        setCurrentPlanId(loadedPlans[0]?.id || null); 
       }
       setIsLoading(false);
     }, (error) => {
@@ -149,7 +148,7 @@ export function useCourtCommander() {
     });
 
     return () => unsubscribe();
-  }, [toast]); // Removed currentPlanId, onValue handles re-fetch and plan selection logic
+  }, [toast]); 
 
   const savePlanToDatabase = useCallback(async (plan: GamePlan | null) => {
     if (!plan || !plan.id) {
@@ -158,7 +157,6 @@ export function useCourtCommander() {
       return;
     }
     try {
-      // Ensure players is an array and schedule segments are arrays before saving.
       const planToSave = {
         ...plan,
         players: ensureArrayStructure(plan.players),
@@ -181,7 +179,6 @@ export function useCourtCommander() {
       toast({ title: "Error", description: "No current plan selected to add player.", variant: "destructive"});
       return;
     }
-    // Ensure currentPlan.players is treated as an array
     const currentPlayersList = ensureArrayStructure(currentPlan.players);
     const updatedPlayers = [...currentPlayersList, player];
     const updatedPlan = { ...currentPlan, players: updatedPlayers };
@@ -207,7 +204,6 @@ export function useCourtCommander() {
     const newSchedule = JSON.parse(JSON.stringify(currentPlan.schedule)) as QuarterSchedule; 
     QUARTERS.forEach(qKey => {
       newSchedule[qKey].forEach((_, posIdx) => {
-        // Ensure this part of the schedule is an array of segments
         newSchedule[qKey][posIdx] = ensureArrayStructure(newSchedule[qKey][posIdx]);
         newSchedule[qKey][posIdx] = newSchedule[qKey][posIdx].filter(segment => segment.playerId !== playerId);
       });
@@ -238,7 +234,6 @@ export function useCourtCommander() {
         }
     });
 
-    // If dragged from timeline, remove from original spot
     if (draggedInfo.sourceType === 'timeline' && 
         draggedInfo.sourceQuarter && 
         typeof draggedInfo.sourcePositionIndex === 'number' && 
@@ -254,22 +249,14 @@ export function useCourtCommander() {
     ensureArrayForPositionInSchedule(targetQuarter, targetPositionIndex);
     const targetPositionSegments = newSchedule[targetQuarter][targetPositionIndex];
 
-    // Check if player is already in this exact position (segment) to avoid duplicates if logic allows multiple segments of same player
-    // This example assumes one player segment per type of drag for now, might need more complex logic for multiple segments
-    // const existingSegmentIndex = targetPositionSegments.findIndex(seg => seg.playerId === playerId);
-
     const newSegment: PlayerTimeSegment = {
       id: crypto.randomUUID(),
       playerId,
-      minutes: QUARTER_DURATION_MINUTES / (targetPositionSegments.length +1), // Distribute time or use default
+      minutes: QUARTER_DURATION_MINUTES / (targetPositionSegments.length +1), 
     };
     
-    // Simple add:
     targetPositionSegments.push(newSegment);
     
-    // Normalize minutes if needed (example: ensure total does not exceed QUARTER_DURATION_MINUTES)
-    // This logic can be complex and depends on desired behavior. For now, simple add.
-
     const updatedPlan = { ...currentPlan, schedule: newSchedule };
     await savePlanToDatabase(updatedPlan);
   }, [currentPlan, savePlanToDatabase]);
@@ -306,7 +293,7 @@ export function useCourtCommander() {
     const segmentIndex = positionSegments.findIndex(seg => seg.id === segmentId);
 
     if (segmentIndex !== -1) {
-      const validatedMinutes = Math.max(0, Math.min(Math.round(minutes), QUARTER_DURATION_MINUTES)); // Round minutes
+      const validatedMinutes = Math.max(0, Math.min(Math.round(minutes), QUARTER_DURATION_MINUTES)); 
       positionSegments[segmentIndex].minutes = validatedMinutes;
 
       const totalMinutesInPosition = positionSegments.reduce((sum, seg) => sum + seg.minutes, 0);
@@ -334,7 +321,7 @@ export function useCourtCommander() {
         ...planToSave, 
         name: name.trim() || "Unnamed Plan", 
         id: newPlanId,
-        players: ensureArrayStructure(planToSave.players), // Ensure players is array
+        players: ensureArrayStructure(planToSave.players), 
          schedule: Object.fromEntries(
           QUARTERS.map(qKey => [
             qKey,
@@ -344,7 +331,7 @@ export function useCourtCommander() {
     };
     
     await set(ref(db, `${GAME_PLANS_PATH}/${newPlanId}`), newPlanData);
-    setCurrentPlanId(newPlanId); // Switch to the new plan
+    setCurrentPlanId(newPlanId); 
     toast({ title: "Game Plan Saved As", description: `"${newPlanData.name}" has been saved.` });
   }, [currentPlan, toast]);
   
@@ -372,14 +359,12 @@ export function useCourtCommander() {
     const newPlanInstance = createNewGamePlanObject(newPlanName);
     try {
       await set(ref(db, `${GAME_PLANS_PATH}/${newPlanInstance.id}`), newPlanInstance);
-      // onValue listener will pick up the new plan and update gamePlans state
-      // setCurrentPlanId will be set if it's the only plan or if currentPlanId becomes invalid
       toast({ title: "New Plan Created", description: `"${newPlanName}" is ready.` });
     } catch (error) {
       console.error("Error creating new plan in Realtime Database:", error);
       toast({ title: "Error", description: "Could not create new plan.", variant: "destructive"});
     }
-  }, [gamePlans, toast]); // Depends on current gamePlans to name correctly.
+  }, [gamePlans, toast]); 
 
   const deleteGamePlan = useCallback(async (planId: string) => {
     if (gamePlans.length <= 1) {
@@ -391,7 +376,7 @@ export function useCourtCommander() {
       await remove(ref(db, `${GAME_PLANS_PATH}/${planId}`));
       toast({ title: "Plan Deleted", description: `"${planToDelete?.name || 'Plan'}" deleted.`});
        if (currentPlanId === planId) {
-         setCurrentPlanId(null); // onValue will pick a new one
+         setCurrentPlanId(null); 
       }
     } catch (error) {
       console.error("Error deleting plan from Realtime Database:", error);
@@ -416,10 +401,33 @@ export function useCourtCommander() {
     return totalMinutes;
   }, [currentPlan]);
 
+  const getCurrentlyOnCourtPlayerIds = useCallback((): Set<string> => {
+    const onCourtIds = new Set<string>();
+    if (!currentPlan?.schedule) return onCourtIds;
+  
+    for (let i = 0; i < PLAYERS_ON_COURT; i++) { // For each of the 5 court positions
+      let lastPlayerInPositionThisGame: string | null = null;
+      // Iterate through quarters in order to find the *last* assignment for this position
+      for (const qKey of QUARTERS) { 
+        const positionSegments = ensureArrayStructure(currentPlan.schedule[qKey]?.[i]);
+        if (positionSegments.length > 0) {
+          const lastSegmentInQuarterForPosition = positionSegments[positionSegments.length - 1];
+          if (lastSegmentInQuarterForPosition?.playerId) {
+            lastPlayerInPositionThisGame = lastSegmentInQuarterForPosition.playerId;
+          }
+        }
+      }
+      if (lastPlayerInPositionThisGame) {
+        onCourtIds.add(lastPlayerInPositionThisGame);
+      }
+    }
+    return onCourtIds;
+  }, [currentPlan]);
+
   return {
     currentPlan,
     isLoading,
-    gamePlans, // The raw list from DB, currentPlan is the processed one
+    gamePlans, 
     players: currentPlan?.players || [], 
     schedule: currentPlan?.schedule || createEmptySchedule(),
     addPlayer,
@@ -429,6 +437,7 @@ export function useCourtCommander() {
     unassignPlayerSegment,
     updatePlayerMinutesInSegment,
     getPlayerTotalTime,
+    getCurrentlyOnCourtPlayerIds,
     saveCurrentGamePlanAs,
     updateGamePlanName,
     loadGamePlan,
@@ -436,4 +445,3 @@ export function useCourtCommander() {
     deleteGamePlan,
   };
 }
-

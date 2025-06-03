@@ -5,8 +5,9 @@ import { QUARTER_DURATION_MINUTES } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { GripVertical, Edit3, Trash2, Clock } from "lucide-react";
+import { GripVertical, Edit3, Trash2, Clock, CheckCircle2 } from "lucide-react"; // Added CheckCircle2
 import { PlayerAvatar } from "./PlayerAvatar";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"; // Added Tooltip components
 
 interface PlayerCardProps {
   player: Player;
@@ -22,6 +23,7 @@ interface PlayerCardProps {
   isSmall?: boolean;
   className?: string;
   totalPlayingTime?: number;
+  isOnCourt?: boolean; // New prop
 }
 
 export function PlayerCard({
@@ -38,6 +40,7 @@ export function PlayerCard({
   isSmall = false,
   className = "",
   totalPlayingTime,
+  isOnCourt = false, // Default to false
 }: PlayerCardProps) {
   const handleDragStart = (e: React.DragEvent<HTMLDivElement>) => {
     if (onDragStart) {
@@ -113,8 +116,20 @@ export function PlayerCard({
         <div className="flex items-center space-x-2 flex-grow min-w-0">
           {draggable && <GripVertical className="h-5 w-5 text-muted-foreground shrink-0" />}
           <PlayerAvatar name={player.name} />
-          <div className="flex-grow min-w-0">
+          <div className="flex-grow min-w-0 flex items-center">
             <CardTitle className="text-sm sm:text-base font-medium truncate font-headline">{player.name}</CardTitle>
+            {isOnCourt && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="ghost" size="icon" className="h-6 w-6 ml-1 p-0 cursor-default" aria-label="On Court">
+                    <CheckCircle2 className="h-4 w-4 text-primary" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>On Court (Final Player in Position)</p>
+                </TooltipContent>
+              </Tooltip>
+            )}
           </div>
         </div>
         <div className="flex space-x-0 sm:space-x-0.5 shrink-0">
