@@ -21,7 +21,7 @@ interface PlayerCardProps {
   onDelete?: (playerId: string) => void;
   isSmall?: boolean;
   className?: string;
-  totalPlayingTime?: number; // New prop
+  totalPlayingTime?: number;
 }
 
 export function PlayerCard({
@@ -109,28 +109,28 @@ export function PlayerCard({
       onDragStart={handleDragStart}
       className={`mb-2 shadow-lg hover:shadow-xl transition-shadow ${draggable ? "cursor-grab" : ""} ${className}`}
     >
-      <CardHeader className="p-3 flex flex-row items-center justify-between space-x-2">
+      <CardHeader className="p-2 sm:p-3 flex flex-row items-center justify-between space-x-2">
         <div className="flex items-center space-x-2 flex-grow min-w-0">
           {draggable && <GripVertical className="h-5 w-5 text-muted-foreground shrink-0" />}
           <PlayerAvatar name={player.name} />
           <div className="flex-grow min-w-0">
-            <CardTitle className="text-base font-medium truncate font-headline">{player.name}</CardTitle>
+            <CardTitle className="text-sm sm:text-base font-medium truncate font-headline">{player.name}</CardTitle>
           </div>
         </div>
         <div className="flex space-x-1 shrink-0">
           {onEdit && (
-            <Button variant="ghost" size="icon" onClick={() => onEdit(player)} className="h-7 w-7">
-              <Edit3 size={16} />
+            <Button variant="ghost" size="icon" onClick={() => onEdit(player)} className="h-6 w-6 sm:h-7 sm:w-7">
+              <Edit3 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             </Button>
           )}
           {onDelete && (
-            <Button variant="ghost" size="icon" onClick={() => onDelete(player.id)} className="h-7 w-7 text-destructive hover:text-destructive">
-              <Trash2 size={16} />
+            <Button variant="ghost" size="icon" onClick={() => onDelete(player.id)} className="h-6 w-6 sm:h-7 sm:w-7 text-destructive hover:text-destructive">
+              <Trash2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             </Button>
           )}
         </div>
       </CardHeader>
-      <CardContent className="p-3 pt-0 text-sm space-y-1">
+      <CardContent className="p-2 pt-0 sm:p-3 sm:pt-0 text-sm space-y-1">
           {(player.jerseyNumber || player.position) && (
             <div>
               {player.jerseyNumber && (

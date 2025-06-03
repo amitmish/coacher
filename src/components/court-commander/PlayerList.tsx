@@ -17,7 +17,7 @@ interface PlayerListProps {
   onDeletePlayer: (playerId: string) => void;
   onPlayerDragStart: (e: React.DragEvent<HTMLDivElement>, playerInfo: DraggedPlayerInfo) => void;
   onDropInPlayerList: (e: React.DragEvent<HTMLDivElement>) => void;
-  getPlayerTotalTime: (playerId: string) => number; // New prop
+  getPlayerTotalTime: (playerId: string) => number;
 }
 
 export function PlayerList({
@@ -27,7 +27,7 @@ export function PlayerList({
   onDeletePlayer,
   onPlayerDragStart,
   onDropInPlayerList,
-  getPlayerTotalTime, // Destructure new prop
+  getPlayerTotalTime,
 }: PlayerListProps) {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingPlayer, setEditingPlayer] = useState<Player | null>(null);
@@ -65,7 +65,7 @@ export function PlayerList({
   };
 
   return (
-    <Card className="w-full md:w-80 shadow-xl h-full flex flex-col">
+    <Card className="w-full md:w-80 shadow-xl md:h-full flex flex-col">
       <CardHeader className="flex flex-row items-center justify-between p-4 border-b">
         <div className="flex items-center space-x-2">
           <Users className="h-6 w-6 text-primary" />
@@ -96,7 +96,7 @@ export function PlayerList({
                   onDragStart={(e) => handlePlayerCardDragStart(e, player)}
                   onEdit={handleEditPlayer}
                   onDelete={onDeletePlayer}
-                  totalPlayingTime={getPlayerTotalTime(player.id)} // Pass total time
+                  totalPlayingTime={getPlayerTotalTime(player.id)}
                 />
               ))}
             </div>

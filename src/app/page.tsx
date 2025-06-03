@@ -103,20 +103,10 @@ export default function CourtCommanderPage() {
         onPrint={handlePrint}
       />
 
-      <main className="flex-grow grid grid-cols-1 md:grid-cols-[auto_1fr] gap-4 mt-4 overflow-hidden printable-area">
-        <div className="h-full overflow-hidden no-print md:block">
-           <PlayerList
-            players={players}
-            onAddPlayer={addPlayer}
-            onEditPlayer={editPlayer}
-            onDeletePlayer={deletePlayer}
-            onPlayerDragStart={handlePlayerDragStart}
-            onDropInPlayerList={handleDropInPlayerList}
-            getPlayerTotalTime={getPlayerTotalTime}
-          />
-        </div>
-         <div className="h-full overflow-hidden md:hidden no-print">
-           <PlayerList
+      <main className="flex-grow flex flex-col md:flex-row gap-4 mt-4 overflow-hidden printable-area">
+        {/* Player List Section */}
+        <div className="w-full md:w-auto md:flex-shrink-0 no-print">
+          <PlayerList
             players={players}
             onAddPlayer={addPlayer}
             onEditPlayer={editPlayer}
@@ -127,7 +117,8 @@ export default function CourtCommanderPage() {
           />
         </div>
 
-        <div className="h-full overflow-hidden">
+        {/* Game Timeline Section */}
+        <div className="flex-grow overflow-hidden"> {/* This will take remaining space */}
           <GameTimeline
             schedule={schedule}
             allPlayers={players}
@@ -136,8 +127,6 @@ export default function CourtCommanderPage() {
             onUpdatePlayerMinutes={updatePlayerMinutesInSegment}
           />
         </div>
-        
-        {/* PlayingTimeSummary removed from here */}
       </main>
     </div>
   );
