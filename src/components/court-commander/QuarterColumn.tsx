@@ -66,13 +66,13 @@ export function QuarterColumn({
   };
 
   return (
-    <Card className="flex-1 min-w-[180px] md:min-w-[200px] shadow-lg flex flex-col h-full">
-      <CardHeader className="p-3 border-b bg-muted/50">
-        <CardTitle className="text-center text-md font-headline">{quarterName}</CardTitle>
+    <Card className="flex-1 min-w-[170px] md:min-w-[190px] shadow-md hover:shadow-lg transition-shadow flex flex-col h-full bg-card/50">
+      <CardHeader className="p-2.5 border-b bg-muted/30">
+        <CardTitle className="text-center text-sm md:text-md font-headline">{quarterName}</CardTitle>
       </CardHeader>
       <CardContent className="p-0 flex-grow overflow-y-auto">
         <ScrollArea className="h-full">
-          <div className="p-2 space-y-2">
+          <div className="p-1.5 space-y-1.5">
             {courtPositions.map((segmentsInPosition, positionIndex) => {
               const totalMinutesInPosition = segmentsInPosition.reduce((sum, seg) => sum + seg.minutes, 0);
               
@@ -82,9 +82,9 @@ export function QuarterColumn({
                   onDragOver={(e) => handleDragOverPosition(e, positionIndex)}
                   onDragLeave={handleDragLeavePosition}
                   onDrop={(e) => handleDropOnPosition(e, positionIndex)}
-                  className={`min-h-[5rem] border-2 border-dashed rounded-md flex flex-col items-stretch justify-start transition-colors p-1.5 space-y-1.5
-                    ${draggedOverPosition === positionIndex ? "border-primary bg-primary/10" : "border-muted-foreground/30 hover:border-accent"}
-                    ${segmentsInPosition.length > 0 ? "border-solid border-transparent bg-card/50" : ""}`}
+                  className={`min-h-[4.5rem] border-2 border-dashed rounded-md flex flex-col items-stretch justify-start transition-colors p-1 space-y-1
+                    ${draggedOverPosition === positionIndex ? "border-primary bg-primary/10 shadow-inner" : "border-muted-foreground/20 hover:border-accent/70"}
+                    ${segmentsInPosition.length > 0 ? "border-solid border-transparent bg-transparent" : ""}`}
                 >
                   {segmentsInPosition.length > 0 ? (
                     segmentsInPosition.map((segment) => {
@@ -96,7 +96,7 @@ export function QuarterColumn({
                           <PlayerCard
                             player={player}
                             draggable
-                            onDragStart={(e, info) => onPlayerDragStartInSegment(e, info)}
+                            onDragStart={(e, info) => onPlayerDragStartInSegment(e, { ...info, sourceSegmentId: segment.id, sourceQuarter: quarterKey, sourcePositionIndex: positionIndex })}
                             sourceQuarter={quarterKey}
                             sourcePositionIndex={positionIndex}
                             sourceSegmentId={segment.id}
@@ -112,13 +112,13 @@ export function QuarterColumn({
                     })
                   ) : (
                     <div className="flex-grow flex items-center justify-center min-h-[3rem]">
-                      <span className="text-xs text-muted-foreground">Drop Player</span>
+                      <span className="text-xs text-muted-foreground/70">Drop Player Here</span>
                     </div>
                   )}
                    <div className={cn(
-                      "text-xs text-center pt-1 font-medium",
-                      totalMinutesInPosition > QUARTER_DURATION_MINUTES ? "text-destructive" : "text-muted-foreground",
-                      segmentsInPosition.length === 0 && "opacity-0" // Hide if no players in position
+                      "text-[10px] text-center pt-0.5 font-medium",
+                      totalMinutesInPosition > QUARTER_DURATION_MINUTES ? "text-destructive font-semibold" : "text-muted-foreground/80",
+                      segmentsInPosition.length === 0 && "opacity-30" 
                     )}>
                       {totalMinutesInPosition} / {QUARTER_DURATION_MINUTES} min
                     </div>
@@ -131,3 +131,4 @@ export function QuarterColumn({
     </Card>
   );
 }
+

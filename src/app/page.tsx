@@ -35,6 +35,7 @@ export default function CourtCommanderPage() {
     playerInfo: DraggedPlayerInfo
   ) => {
     e.dataTransfer.setData("application/json", JSON.stringify(playerInfo));
+    e.dataTransfer.effectAllowed = "move";
   };
 
   const handlePlayerDropOnTimeline = (
@@ -46,7 +47,7 @@ export default function CourtCommanderPage() {
       draggedInfo.playerId,
       targetQuarter,
       targetPositionIndex,
-      draggedInfo
+      draggedInfo // Pass the full draggedInfo object
     );
   };
 
@@ -71,7 +72,7 @@ export default function CourtCommanderPage() {
 
   if (isLoading || !currentPlan) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen p-4">
+      <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-background">
         <InlineBasketballIcon className="h-16 w-16 text-primary mb-4 animate-bounce" />
         <p className="text-xl font-semibold text-muted-foreground">Loading Court Commander...</p>
       </div>
@@ -79,16 +80,16 @@ export default function CourtCommanderPage() {
   }
 
   return (
-    <div className="flex flex-col h-screen p-2 sm:p-4 bg-background">
-      <header className="mb-4 no-print">
+    <div className="flex flex-col h-screen p-2 sm:p-4 bg-background text-foreground">
+      <header className="mb-2 sm:mb-4 no-print">
         <div className="flex items-center space-x-2">
-          <InlineBasketballIcon className="h-8 w-8 text-primary" />
-          <h1 className="text-3xl font-bold font-headline text-foreground">
+          <InlineBasketballIcon className="h-7 w-7 sm:h-8 sm:w-8 text-primary" />
+          <h1 className="text-2xl sm:text-3xl font-bold font-headline">
             Court Commander
           </h1>
         </div>
-        <p className="text-muted-foreground">
-          Plan your basketball substitutions: {currentPlan.name}
+        <p className="text-sm text-muted-foreground">
+          Plan: <span className="font-semibold text-foreground/90">{currentPlan.name}</span>
         </p>
       </header>
 
@@ -105,13 +106,13 @@ export default function CourtCommanderPage() {
       />
 
       {/* Mobile Tabbed View */}
-      <div className="md:hidden flex-grow mt-4 overflow-hidden printable-area">
+      <div className="md:hidden flex-grow mt-3 sm:mt-4 overflow-hidden printable-area">
         <Tabs defaultValue="players" className="w-full h-full flex flex-col">
-          <TabsList className="grid w-full grid-cols-2 sticky top-0 z-10 bg-background">
-            <TabsTrigger value="players">Players</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-2 sticky top-0 z-10 bg-background/95 backdrop-blur-sm shadow-sm">
+            <TabsTrigger value="players">Players ({players.length})</TabsTrigger>
             <TabsTrigger value="timeline">Timeline</TabsTrigger>
           </TabsList>
-          <TabsContent value="players" className="flex-grow overflow-auto pt-2">
+          <TabsContent value="players" className="flex-grow overflow-auto pt-2 pb-12"> {/* Added pb for scroll room */}
             <PlayerList
               players={players}
               onAddPlayer={addPlayer}
@@ -122,7 +123,7 @@ export default function CourtCommanderPage() {
               getPlayerTotalTime={getPlayerTotalTime}
             />
           </TabsContent>
-          <TabsContent value="timeline" className="flex-grow overflow-auto pt-2">
+          <TabsContent value="timeline" className="flex-grow overflow-auto pt-2 pb-12"> {/* Added pb for scroll room */}
             <GameTimeline
               schedule={schedule}
               allPlayers={players}
@@ -135,8 +136,8 @@ export default function CourtCommanderPage() {
       </div>
 
       {/* Desktop Side-by-Side View */}
-      <main className="hidden md:flex flex-grow gap-4 mt-4 overflow-hidden printable-area">
-        <div className="md:w-80 md:flex-shrink-0">
+      <main className="hidden md:flex flex-grow gap-3 sm:gap-4 mt-3 sm:mt-4 overflow-hidden printable-area">
+        <div className="md:w-72 lg:w-80 md:flex-shrink-0 h-full">
           <PlayerList
             players={players}
             onAddPlayer={addPlayer}
@@ -147,7 +148,7 @@ export default function CourtCommanderPage() {
             getPlayerTotalTime={getPlayerTotalTime}
           />
         </div>
-        <div className="flex-grow overflow-hidden">
+        <div className="flex-grow overflow-hidden h-full">
           <GameTimeline
             schedule={schedule}
             allPlayers={players}
@@ -160,3 +161,4 @@ export default function CourtCommanderPage() {
     </div>
   );
 }
+
