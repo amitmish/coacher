@@ -5,12 +5,13 @@ import { getFirestore, type Firestore } from "firebase/firestore";
 
 // TODO: Replace with your actual Firebase project configuration
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_AUTH_DOMAIN",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_STORAGE_BUCKET",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId: "YOUR_APP_ID",
+  apiKey: "AIzaSyAb9DJcr88iMpQq-P8Nn186zh-FquoETL4",
+  authDomain: "coach-efd5f.firebaseapp.com",
+  projectId: "coach-efd5f",
+  storageBucket: "coach-efd5f.firebasestorage.app",
+  messagingSenderId: "533585606213",
+  appId: "1:533585606213:web:1777982d81e0d9cfb6152c",
+  measurementId: "G-VV4REGYD01"
 };
 
 let app: FirebaseApp;

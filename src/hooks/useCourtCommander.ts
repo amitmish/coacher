@@ -212,7 +212,7 @@ export function useCourtCommander() {
     const newSegment: PlayerTimeSegment = {
       id: crypto.randomUUID(),
       playerId,
-      minutes: targetPositionSegments.length === 0 ? QUARTER_DURATION_MINUTES : 6,
+      minutes: targetPositionSegments.length === 0 ? QUARTER_DURATION_MINUTES : 6, // Default to 6 or full if first
     };
     targetPositionSegments.push(newSegment);
     newSchedule[targetQuarter][targetPositionIndex] = targetPositionSegments;
