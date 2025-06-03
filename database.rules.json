@@ -1,6 +1,9 @@
+
 {
   "rules": {
-    ".read": true,
-    ".write": true
+    "gamePlans": {
+      ".read": "true",
+      ".write": "true"
+    }
   }
 }
