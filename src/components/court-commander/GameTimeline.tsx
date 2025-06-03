@@ -34,7 +34,8 @@ export function GameTimeline({
   };
   
   const handleDragOverTimeline = (e: React.DragEvent<HTMLDivElement>) => {
-    // e.preventDefault(); 
+    e.preventDefault(); 
+    e.dataTransfer.dropEffect = "move";
   };
   
   const handleDropOnTimelineBackground = (e: React.DragEvent<HTMLDivElement>) => {
