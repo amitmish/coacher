@@ -7,11 +7,12 @@ import { GameTimeline } from "@/components/court-commander/GameTimeline";
 import { CourtCommanderControls } from "@/components/court-commander/CourtCommanderControls";
 import { useCourtCommander } from "@/hooks/useCourtCommander";
 import type { DraggedPlayerInfo, QuarterKey } from "@/lib/types";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function CourtCommanderPage() {
   const {
     currentPlan,
-    isLoading, 
+    isLoading,
     gamePlans,
     players,
     schedule,
@@ -67,9 +68,9 @@ export default function CourtCommanderPage() {
   const handlePrint = () => {
     window.print();
   };
-  
-  if (isLoading || !currentPlan) { 
-     return (
+
+  if (isLoading || !currentPlan) {
+    return (
       <div className="flex flex-col items-center justify-center min-h-screen p-4">
         <InlineBasketballIcon className="h-16 w-16 text-primary mb-4 animate-bounce" />
         <p className="text-xl font-semibold text-muted-foreground">Loading Court Commander...</p>
@@ -103,9 +104,39 @@ export default function CourtCommanderPage() {
         onPrint={handlePrint}
       />
 
-      <main className="flex-grow flex flex-col md:flex-row gap-4 mt-4 overflow-hidden printable-area">
-        {/* Player List Section */}
-        <div className="w-full md:w-auto md:flex-shrink-0 no-print">
+      {/* Mobile Tabbed View */}
+      <div className="md:hidden flex-grow mt-4 overflow-hidden printable-area">
+        <Tabs defaultValue="players" className="w-full h-full flex flex-col">
+          <TabsList className="grid w-full grid-cols-2 sticky top-0 z-10 bg-background">
+            <TabsTrigger value="players">Players</TabsTrigger>
+            <TabsTrigger value="timeline">Timeline</TabsTrigger>
+          </TabsList>
+          <TabsContent value="players" className="flex-grow overflow-auto pt-2">
+            <PlayerList
+              players={players}
+              onAddPlayer={addPlayer}
+              onEditPlayer={editPlayer}
+              onDeletePlayer={deletePlayer}
+              onPlayerDragStart={handlePlayerDragStart}
+              onDropInPlayerList={handleDropInPlayerList}
+              getPlayerTotalTime={getPlayerTotalTime}
+            />
+          </TabsContent>
+          <TabsContent value="timeline" className="flex-grow overflow-auto pt-2">
+            <GameTimeline
+              schedule={schedule}
+              allPlayers={players}
+              onPlayerDrop={handlePlayerDropOnTimeline}
+              onPlayerDragStart={handlePlayerDragStart}
+              onUpdatePlayerMinutes={updatePlayerMinutesInSegment}
+            />
+          </TabsContent>
+        </Tabs>
+      </div>
+
+      {/* Desktop Side-by-Side View */}
+      <main className="hidden md:flex flex-grow gap-4 mt-4 overflow-hidden printable-area">
+        <div className="md:w-80 md:flex-shrink-0">
           <PlayerList
             players={players}
             onAddPlayer={addPlayer}
@@ -116,9 +147,7 @@ export default function CourtCommanderPage() {
             getPlayerTotalTime={getPlayerTotalTime}
           />
         </div>
-
-        {/* Game Timeline Section */}
-        <div className="flex-grow overflow-hidden"> {/* This will take remaining space */}
+        <div className="flex-grow overflow-hidden">
           <GameTimeline
             schedule={schedule}
             allPlayers={players}
