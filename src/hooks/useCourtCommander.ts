@@ -32,85 +32,73 @@ const createNewGamePlanObject = (name: string = "New Game Plan", id?: string): G
   schedule: createEmptySchedule(),
 });
 
-const migratePlanStructure = (plan: any): GamePlan => {
-  if (!plan || !plan.id || typeof plan.name !== 'string' || typeof plan.schedule !== 'object' || plan.schedule === null) {
-    console.warn("Invalid plan structure received, attempting to create a valid default:", plan);
-    return createNewGamePlanObject(plan?.name || "Recovered Plan", plan?.id || crypto.randomUUID());
-  }
+const migratePlanStructure = (planData: any): GamePlan => {
+  // Ensure basic plan structure
+  const id = planData?.id ? String(planData.id) : crypto.randomUUID();
+  const name = planData?.name ? String(planData.name) : "Recovered Plan";
 
-  let needsMigration = false;
-  const newSchedule: Partial<QuarterSchedule> = {};
+  let parsedPlayers: Player[] = [];
+  if (Array.isArray(planData?.players)) {
+    parsedPlayers = planData.players;
+  } else if (typeof planData?.players === 'object' && planData.players !== null) {
+    parsedPlayers = Object.values(planData.players);
+  } // If planData.players is undefined or null, parsedPlayers remains []
 
-  QUARTERS.forEach(qKey => {
-    const oldQuarterData = plan.schedule[qKey];
-    if (!oldQuarterData || !Array.isArray(oldQuarterData) || oldQuarterData.length !== PLAYERS_ON_COURT) {
-      needsMigration = true;
-      newSchedule[qKey] = Array(PLAYERS_ON_COURT).fill(null).map(() => []) as OnCourtPositions[typeof qKey];
-      return;
-    }
-
-    newSchedule[qKey] = oldQuarterData.map((positionSegments: any[]) => {
-      if (!Array.isArray(positionSegments)) {
-        if (typeof positionSegments === 'object' && positionSegments !== null) {
-            needsMigration = true;
-            positionSegments = Object.values(positionSegments);
-        } else {
-            needsMigration = true;
-            return [];
-        }
-      }
-      return positionSegments.map((segment: any) => {
-        if (segment && typeof segment === 'object' && segment.playerId !== undefined && typeof segment.minutes === 'number') {
-          if (!segment.id) {
-            needsMigration = true;
-            return { ...segment, id: crypto.randomUUID() };
-          }
-          return segment;
-        }
-        needsMigration = true;
-        return null;
-      }).filter(Boolean) as CourtPositionSegments;
-    }) as OnCourtPositions[typeof qKey];
-  });
-
-  let rawPlayers = plan.players;
-  let actualPlayersArray: Player[] = [];
-
-  if (Array.isArray(rawPlayers)) {
-    actualPlayersArray = rawPlayers;
-  } else if (typeof rawPlayers === 'object' && rawPlayers !== null) {
-    actualPlayersArray = Object.values(rawPlayers);
-    needsMigration = true;
-  } else if (rawPlayers === undefined || rawPlayers === null) {
-    actualPlayersArray = [];
-    if (plan.hasOwnProperty('players')) {
-        needsMigration = true;
-    }
-  } else {
-    console.warn("Invalid plan.players structure, re-initializing players array:", rawPlayers);
-    actualPlayersArray = [];
-    needsMigration = true;
-  }
-
-  const finalPlayers = actualPlayersArray.map((p: any) => {
-    if(p && typeof p.id === 'string' && typeof p.name === 'string') {
+  const finalPlayers: Player[] = parsedPlayers.map((p: any) => {
+    if (p && typeof p.id === 'string' && typeof p.name === 'string') {
       return {
         id: p.id,
         name: p.name,
-        jerseyNumber: p.jerseyNumber || "",
-        position: p.position || "",
-      } as Player;
+        jerseyNumber: typeof p.jerseyNumber === 'string' ? p.jerseyNumber : "",
+        position: typeof p.position === 'string' ? p.position : "",
+      };
     }
-    needsMigration = true;
     return null;
   }).filter(Boolean) as Player[];
 
 
-  const migratedResult = { ...plan, id: String(plan.id), name: String(plan.name), players: finalPlayers, schedule: newSchedule as QuarterSchedule };
-  if (needsMigration) {
-     console.log("Migrating plan structure for plan ID:", plan.id, "Name:", plan.name);
+  const newSchedule: Partial<QuarterSchedule> = {};
+  let scheduleNeedsMigration = false;
+  QUARTERS.forEach(qKey => {
+    const oldQuarterData = planData?.schedule?.[qKey];
+    if (!oldQuarterData || !Array.isArray(oldQuarterData) || oldQuarterData.length !== PLAYERS_ON_COURT) {
+      scheduleNeedsMigration = true;
+      newSchedule[qKey] = Array(PLAYERS_ON_COURT).fill(null).map(() => []) as OnCourtPositions[typeof qKey];
+      return;
+    }
+
+    newSchedule[qKey] = oldQuarterData.map((positionSegments: any) => {
+      let segmentsArray: any[] = [];
+      if (Array.isArray(positionSegments)) {
+        segmentsArray = positionSegments;
+      } else if (typeof positionSegments === 'object' && positionSegments !== null) {
+        segmentsArray = Object.values(positionSegments);
+        scheduleNeedsMigration = true;
+      } else {
+        scheduleNeedsMigration = true; // Missing or invalid position, default to empty
+        return [];
+      }
+      
+      return segmentsArray.map((segment: any) => {
+        if (segment && typeof segment === 'object' && segment.playerId !== undefined && typeof segment.minutes === 'number') {
+          return { ...segment, id: segment.id || crypto.randomUUID() };
+        }
+        scheduleNeedsMigration = true;
+        return null;
+      }).filter(Boolean) as CourtPositionSegments;
+    }) as OnCourtPositions[typeof qKey];
+  });
+  
+  if (scheduleNeedsMigration) {
+    // console.log("Migrating schedule structure for plan ID:", id, "Name:", name);
   }
-  return migratedResult;
+
+  return {
+    id,
+    name,
+    players: finalPlayers,
+    schedule: newSchedule as QuarterSchedule,
+  };
 };
 
 
@@ -122,12 +110,8 @@ export function useCourtCommander() {
 
   const currentPlan = useMemo(() => {
     if (!currentPlanId || gamePlans.length === 0) return null;
-    const plan = gamePlans.find(p => p.id === currentPlanId);
-    // Ensure plan.players is an array, though migratePlanStructure should handle this.
-    if (plan && plan.players && !Array.isArray(plan.players)) {
-      return { ...plan, players: Object.values(plan.players as Record<string, Player>) };
-    }
-    return plan || null;
+    // migratePlanStructure ensures plan.players is an array.
+    return gamePlans.find(p => p.id === currentPlanId) || null;
   }, [gamePlans, currentPlanId]);
 
   useEffect(() => {
@@ -138,7 +122,7 @@ export function useCourtCommander() {
       const data = snapshot.val();
       let loadedPlans: GamePlan[] = [];
 
-      if (data) {
+      if (data && typeof data === 'object') {
         loadedPlans = Object.keys(data).map(key => migratePlanStructure({ ...data[key], id: key }));
       }
       
@@ -148,8 +132,7 @@ export function useCourtCommander() {
         const initialPlan = createNewGamePlanObject("Default Plan");
         try {
           await set(ref(db, `${GAME_PLANS_PATH}/${initialPlan.id}`), initialPlan);
-          console.log("Created initial default plan in Realtime Database.");
-          // setCurrentPlanId(initialPlan.id); // Handled by subsequent onValue
+          // setCurrentPlanId will be handled by the next onValue call or the logic below
         } catch (error) {
           console.error("Failed to create initial plan:", error);
           toast({ title: "Error", description: "Could not create initial game plan.", variant: "destructive"});
@@ -165,7 +148,7 @@ export function useCourtCommander() {
     });
 
     return () => unsubscribe();
-  }, [currentPlanId, toast]);
+  }, [currentPlanId, toast]); // currentPlanId dependency ensures re-subscription if it changes (e.g. new plan loaded)
 
   const savePlanToDatabase = useCallback(async (plan: GamePlan) => {
     if (!plan.id) {
@@ -174,8 +157,12 @@ export function useCourtCommander() {
       return;
     }
     try {
-      // Ensure players is an array before saving, RTDB might convert it to object if sparse
-      const planToSave = { ...plan, players: Array.isArray(plan.players) ? plan.players : Object.values(plan.players || {}) };
+      // Ensure players is an array before saving. migratePlanStructure should handle this on read,
+      // and action callbacks should maintain it as an array. This is a final safeguard.
+      const planToSave = {
+        ...plan,
+        players: Array.isArray(plan.players) ? plan.players : Object.values(plan.players || {}),
+      };
       await set(ref(db, `${GAME_PLANS_PATH}/${plan.id}`), planToSave);
     } catch (error) {
       console.error("Error saving plan to Realtime Database:", error);
@@ -188,12 +175,18 @@ export function useCourtCommander() {
       toast({ title: "Error", description: "No current plan selected to add player.", variant: "destructive"});
       return;
     }
-    const currentPlayersArray = currentPlan.players
-      ? (Array.isArray(currentPlan.players)
-          ? currentPlan.players
-          : Object.values(currentPlan.players as Record<string, Player>))
-      : [];
-    const updatedPlayers = [...currentPlayersArray, player];
+
+    let currentPlayersList: Player[] = [];
+    if (currentPlan.players) {
+      if (Array.isArray(currentPlan.players)) {
+        currentPlayersList = currentPlan.players;
+      } else if (typeof currentPlan.players === 'object' && currentPlan.players !== null) {
+        // This path should ideally not be taken if currentPlan is derived from migrated data
+        currentPlayersList = Object.values(currentPlan.players as Record<string, Player>);
+      }
+    }
+    
+    const updatedPlayers = [...currentPlayersList, player];
     const updatedPlan = { ...currentPlan, players: updatedPlayers };
     await savePlanToDatabase(updatedPlan);
     toast({ title: "Player Added", description: `${player.name} has been added.` });
@@ -201,12 +194,17 @@ export function useCourtCommander() {
 
   const editPlayer = useCallback(async (updatedPlayer: Player) => {
     if (!currentPlan) return;
-    const currentPlayersArray = currentPlan.players
-      ? (Array.isArray(currentPlan.players)
-          ? currentPlan.players
-          : Object.values(currentPlan.players as Record<string, Player>))
-      : [];
-    const updatedPlayers = currentPlayersArray.map(p => p.id === updatedPlayer.id ? updatedPlayer : p);
+    
+    let currentPlayersList: Player[] = [];
+    if (currentPlan.players) {
+      if (Array.isArray(currentPlan.players)) {
+        currentPlayersList = currentPlan.players;
+      } else if (typeof currentPlan.players === 'object' && currentPlan.players !== null) {
+        currentPlayersList = Object.values(currentPlan.players as Record<string, Player>);
+      }
+    }
+
+    const updatedPlayers = currentPlayersList.map(p => p.id === updatedPlayer.id ? updatedPlayer : p);
     const updatedPlan = { ...currentPlan, players: updatedPlayers };
     await savePlanToDatabase(updatedPlan);
     toast({ title: "Player Updated", description: `${updatedPlayer.name}'s details have been updated.` });
@@ -214,19 +212,26 @@ export function useCourtCommander() {
 
   const deletePlayer = useCallback(async (playerId: string) => {
     if (!currentPlan) return;
-    const currentPlayersArray = currentPlan.players
-      ? (Array.isArray(currentPlan.players)
-          ? currentPlan.players
-          : Object.values(currentPlan.players as Record<string, Player>))
-      : [];
-    const playerToRemove = currentPlayersArray.find(p => p.id === playerId);
-    const updatedPlayers = currentPlayersArray.filter(p => p.id !== playerId);
+
+    let currentPlayersList: Player[] = [];
+    if (currentPlan.players) {
+      if (Array.isArray(currentPlan.players)) {
+        currentPlayersList = currentPlan.players;
+      } else if (typeof currentPlan.players === 'object' && currentPlan.players !== null) {
+        currentPlayersList = Object.values(currentPlan.players as Record<string, Player>);
+      }
+    }
+    const playerToRemove = currentPlayersList.find(p => p.id === playerId);
+    const updatedPlayers = currentPlayersList.filter(p => p.id !== playerId);
     
-    const newSchedule = JSON.parse(JSON.stringify(currentPlan.schedule)) as QuarterSchedule;
+    const newSchedule = JSON.parse(JSON.stringify(currentPlan.schedule)) as QuarterSchedule; // Deep copy
     QUARTERS.forEach(qKey => {
-      newSchedule[qKey].forEach((positionSegments, posIdx) => {
-        const segmentsArray = Array.isArray(newSchedule[qKey][posIdx]) ? newSchedule[qKey][posIdx] : Object.values(newSchedule[qKey][posIdx] || {});
-        newSchedule[qKey][posIdx] = segmentsArray.filter(segment => segment.playerId !== playerId);
+      // Ensure each position in the schedule is an array
+      newSchedule[qKey].forEach((_, posIdx) => {
+        if (!Array.isArray(newSchedule[qKey][posIdx])) {
+          newSchedule[qKey][posIdx] = Object.values(newSchedule[qKey][posIdx] || {}) as CourtPositionSegments;
+        }
+        newSchedule[qKey][posIdx] = newSchedule[qKey][posIdx].filter(segment => segment.playerId !== playerId);
       });
     });
     const updatedPlan = { ...currentPlan, players: updatedPlayers, schedule: newSchedule };
@@ -243,41 +248,47 @@ export function useCourtCommander() {
     if (!currentPlan) return;
     let newSchedule = JSON.parse(JSON.stringify(currentPlan.schedule)) as QuarterSchedule;
 
-    const ensureArray = (quarter: QuarterKey, posIdx: number) => {
-        if (!Array.isArray(newSchedule[quarter][posIdx])) {
-            newSchedule[quarter][posIdx] = Object.values(newSchedule[quarter][posIdx] || {}) as CourtPositionSegments;
+    const ensureArrayForPosition = (quarter: QuarterKey, posIdx: number) => {
+        if (!newSchedule[quarter][posIdx] || !Array.isArray(newSchedule[quarter][posIdx])) {
+            newSchedule[quarter][posIdx] = Array.isArray(newSchedule[quarter][posIdx]) 
+                ? newSchedule[quarter][posIdx] 
+                : Object.values(newSchedule[quarter][posIdx] || {}) as CourtPositionSegments;
         }
     };
     
     QUARTERS.forEach(q => {
         for (let i = 0; i < PLAYERS_ON_COURT; i++) {
-            ensureArray(q, i);
+            ensureArrayForPosition(q, i);
         }
     });
 
     if (draggedInfo.sourceType === 'timeline' && draggedInfo.sourceQuarter && typeof draggedInfo.sourcePositionIndex === 'number' && draggedInfo.sourceSegmentId) {
-      ensureArray(draggedInfo.sourceQuarter, draggedInfo.sourcePositionIndex);
+      ensureArrayForPosition(draggedInfo.sourceQuarter, draggedInfo.sourcePositionIndex);
       const sourceSegments = newSchedule[draggedInfo.sourceQuarter][draggedInfo.sourcePositionIndex];
       newSchedule[draggedInfo.sourceQuarter][draggedInfo.sourcePositionIndex] = sourceSegments.filter(
         (segment) => segment.id !== draggedInfo.sourceSegmentId
       );
     }
     
+    // Remove player from other positions in the same target quarter IF NOT dragging within the same position
     if (!(draggedInfo.sourceType === 'timeline' && draggedInfo.sourceQuarter === targetQuarter && draggedInfo.sourcePositionIndex === targetPositionIndex)) {
        newSchedule[targetQuarter].forEach((_, posIdx) => {
-        ensureArray(targetQuarter, posIdx);
+        ensureArrayForPosition(targetQuarter, posIdx);
+        // Only remove if it's not the target position itself, to allow multiple segments of same player in one position.
+        // This logic might need refinement based on exact desired behavior for multi-segment per player.
+        // For now, it allows player to be in multiple segments in one position, but removes from *other* positions in same quarter.
         if (posIdx !== targetPositionIndex) { 
           newSchedule[targetQuarter][posIdx] = newSchedule[targetQuarter][posIdx].filter(segment => segment.playerId !== playerId);
         }
       });
     }
 
-    ensureArray(targetQuarter, targetPositionIndex);
+    ensureArrayForPosition(targetQuarter, targetPositionIndex);
     const targetPositionSegments = newSchedule[targetQuarter][targetPositionIndex];
     const newSegment: PlayerTimeSegment = {
       id: crypto.randomUUID(),
       playerId,
-      minutes: targetPositionSegments.length === 0 ? QUARTER_DURATION_MINUTES : 6,
+      minutes: targetPositionSegments.length === 0 ? QUARTER_DURATION_MINUTES : 6, // Default minutes
     };
     targetPositionSegments.push(newSegment);
 
@@ -289,12 +300,14 @@ export function useCourtCommander() {
     if (!currentPlan) return;
     const newSchedule = JSON.parse(JSON.stringify(currentPlan.schedule)) as QuarterSchedule;
     
-    const ensureArray = (q: QuarterKey, pIndex: number) => {
-        if (!Array.isArray(newSchedule[q][pIndex])) {
-            newSchedule[q][pIndex] = Object.values(newSchedule[q][pIndex] || {}) as CourtPositionSegments;
+    const ensureArrayForPosition = (q: QuarterKey, pIndex: number) => {
+        if (!newSchedule[q][pIndex] || !Array.isArray(newSchedule[q][pIndex])) {
+             newSchedule[q][pIndex] = Array.isArray(newSchedule[q][pIndex]) 
+                ? newSchedule[q][pIndex] 
+                : Object.values(newSchedule[q][pIndex] || {}) as CourtPositionSegments;
         }
     };
-    ensureArray(quarter, positionIndex);
+    ensureArrayForPosition(quarter, positionIndex);
 
     const positionSegments = newSchedule[quarter][positionIndex];
     newSchedule[quarter][positionIndex] = positionSegments.filter(segment => segment.id !== segmentId);
@@ -306,12 +319,14 @@ export function useCourtCommander() {
     if (!currentPlan) return;
     const newSchedule = JSON.parse(JSON.stringify(currentPlan.schedule)) as QuarterSchedule;
 
-    const ensureArray = (q: QuarterKey, pIndex: number) => {
-        if (!Array.isArray(newSchedule[q][pIndex])) {
-            newSchedule[q][pIndex] = Object.values(newSchedule[q][pIndex] || {}) as CourtPositionSegments;
+    const ensureArrayForPosition = (q: QuarterKey, pIndex: number) => {
+         if (!newSchedule[q][pIndex] || !Array.isArray(newSchedule[q][pIndex])) {
+             newSchedule[q][pIndex] = Array.isArray(newSchedule[q][pIndex]) 
+                ? newSchedule[q][pIndex] 
+                : Object.values(newSchedule[q][pIndex] || {}) as CourtPositionSegments;
         }
     };
-    ensureArray(quarterKey, positionIndex);
+    ensureArrayForPosition(quarterKey, positionIndex);
 
     const positionSegments = newSchedule[quarterKey][positionIndex];
     const segmentIndex = positionSegments.findIndex(seg => seg.id === segmentId);
@@ -334,13 +349,22 @@ export function useCourtCommander() {
   }, [currentPlan, savePlanToDatabase, toast]);
 
   const saveCurrentGamePlanAs = useCallback(async (name: string) => {
-    if (!currentPlan) return;
+    if (!currentPlan) {
+        toast({ title: "Error", description: "No current plan to save.", variant: "destructive"});
+        return;
+    }
     const newPlanId = crypto.randomUUID();
+    // Deep copy current plan and ensure players is an array
     const planToSave = JSON.parse(JSON.stringify(currentPlan));
-    const newPlan = { ...planToSave, name: name, id: newPlanId };
+    const newPlanData = { 
+        ...planToSave, 
+        name: name, 
+        id: newPlanId,
+        players: Array.isArray(planToSave.players) ? planToSave.players : Object.values(planToSave.players || {})
+    };
     
-    await set(ref(db, `${GAME_PLANS_PATH}/${newPlanId}`), newPlan);
-    setCurrentPlanId(newPlanId);
+    await set(ref(db, `${GAME_PLANS_PATH}/${newPlanId}`), newPlanData);
+    setCurrentPlanId(newPlanId); // Switch to the new plan
     toast({ title: "Game Plan Saved As", description: `"${name}" has been saved.` });
   }, [currentPlan, toast]);
   
@@ -348,7 +372,7 @@ export function useCourtCommander() {
     const planToUpdate = gamePlans.find(p => p.id === planId);
     if (planToUpdate) {
       const updatedRenamedPlan = { ...planToUpdate, name: newName };
-      await savePlanToDatabase(updatedRenamedPlan);
+      await savePlanToDatabase(updatedRenamedPlan); // savePlanToDatabase ensures players is array
       toast({ title: "Plan Renamed", description: `Plan renamed to "${newName}".` });
     }
   }, [gamePlans, savePlanToDatabase, toast]);
@@ -365,7 +389,7 @@ export function useCourtCommander() {
 
   const createAndLoadNewGamePlan = useCallback(async () => {
     const newPlanName = `Game Plan ${gamePlans.length + 1}`;
-    const newPlanInstance = createNewGamePlanObject(newPlanName);
+    const newPlanInstance = createNewGamePlanObject(newPlanName); // players will be []
     try {
       await set(ref(db, `${GAME_PLANS_PATH}/${newPlanInstance.id}`), newPlanInstance);
       setCurrentPlanId(newPlanInstance.id); 
@@ -374,7 +398,7 @@ export function useCourtCommander() {
       console.error("Error creating new plan in Realtime Database:", error);
       toast({ title: "Error", description: "Could not create new plan.", variant: "destructive"});
     }
-  }, [gamePlans.length, toast]);
+  }, [gamePlans.length, toast]); // gamePlans (not gamePlans.length) for correct closure
 
   const deleteGamePlan = useCallback(async (planId: string) => {
     if (gamePlans.length <= 1) {
@@ -386,7 +410,8 @@ export function useCourtCommander() {
       await remove(ref(db, `${GAME_PLANS_PATH}/${planId}`));
       toast({ title: "Plan Deleted", description: `"${planToDelete?.name || 'Plan'}" deleted.`});
        if (currentPlanId === planId) {
-        setCurrentPlanId(null); 
+        // currentPlanId will be reset by the onValue listener's logic if it becomes invalid
+         setCurrentPlanId(null); // Explicitly nullify, onValue will pick a new one
       }
     } catch (error) {
       console.error("Error deleting plan from Realtime Database:", error);
@@ -421,7 +446,7 @@ export function useCourtCommander() {
     currentPlan,
     isLoading,
     gamePlans,
-    players: currentPlan?.players || [], // Simplified: currentPlan.players should be an array due to migratePlanStructure/useMemo
+    players: currentPlan?.players || [], 
     schedule: currentPlan?.schedule || createEmptySchedule(),
     addPlayer,
     editPlayer,
@@ -437,3 +462,4 @@ export function useCourtCommander() {
     deleteGamePlan,
   };
 }
+
