@@ -5,7 +5,7 @@ import { QUARTER_DURATION_MINUTES } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { GripVertical, Edit3, Trash2, Shirt, Clock } from "lucide-react";
+import { GripVertical, Edit3, Trash2, Clock } from "lucide-react"; // Removed Shirt icon
 import { PlayerAvatar } from "./PlayerAvatar";
 
 interface PlayerCardProps {
@@ -117,34 +117,24 @@ export function PlayerCard({
             <CardTitle className="text-sm sm:text-base font-medium truncate font-headline">{player.name}</CardTitle>
           </div>
         </div>
-        <div className="flex space-x-1 shrink-0">
+        <div className="flex space-x-0.5 shrink-0"> {/* Reduced space between buttons */}
           {onEdit && (
-            <Button variant="ghost" size="icon" onClick={() => onEdit(player)} className="h-6 w-6 sm:h-7 sm:w-7">
-              <Edit3 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+            <Button variant="ghost" size="icon" onClick={() => onEdit(player)} className="h-7 w-7"> {/* Smaller button */}
+              <Edit3 className="h-4 w-4" /> {/* Smaller icon */}
             </Button>
           )}
           {onDelete && (
-            <Button variant="ghost" size="icon" onClick={() => onDelete(player.id)} className="h-6 w-6 sm:h-7 sm:w-7 text-destructive hover:text-destructive">
-              <Trash2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+            <Button variant="ghost" size="icon" onClick={() => onDelete(player.id)} className="h-7 w-7 text-destructive hover:text-destructive/90"> {/* Smaller button and adjusted hover */}
+              <Trash2 className="h-4 w-4" /> {/* Smaller icon */}
             </Button>
           )}
         </div>
       </CardHeader>
       <CardContent className="p-2 pt-0 sm:p-3 sm:pt-0 text-sm space-y-1">
-          {(player.jerseyNumber || player.position) && (
-            <div>
-              {player.jerseyNumber && (
-                <div className="flex items-center text-muted-foreground">
-                  <Shirt size={14} className="mr-1.5" /> Jersey: {player.jerseyNumber}
-                </div>
-              )}
-              {player.position && (
-                <p className="text-muted-foreground mt-0.5">Position: {player.position}</p>
-              )}
-            </div>
-          )}
+          {/* Jersey Number and Position are removed from direct display here for a lighter UI */}
+          {/* They are still available in the PlayerFormDialog */}
           {totalPlayingTime !== undefined && (
-            <div className="flex items-center text-primary font-medium">
+            <div className="flex items-center text-primary font-medium pt-1">
               <Clock size={14} className="mr-1.5" /> Total Time: {totalPlayingTime} min
             </div>
           )}
