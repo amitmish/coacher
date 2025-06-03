@@ -20,6 +20,7 @@ export default function CourtCommanderPage() {
     deletePlayer,
     assignPlayerToSlot,
     unassignPlayerFromSlot,
+    updatePlayerMinutesInSlot, // Added this
     getPlayerTotalTime,
     saveCurrentGamePlanAs,
     updateGamePlanName,
@@ -56,7 +57,6 @@ export default function CourtCommanderPage() {
       if (!rawData) return;
       const draggedInfo: DraggedPlayerInfo = JSON.parse(rawData);
 
-      // If player was dragged from a timeline slot, unassign them
       if (draggedInfo.sourceQuarter && draggedInfo.sourceSlotIndex !== undefined) {
         unassignPlayerFromSlot(draggedInfo.sourceQuarter, draggedInfo.sourceSlotIndex);
       }
@@ -105,7 +105,7 @@ export default function CourtCommanderPage() {
       />
 
       <main className="flex-grow grid grid-cols-1 md:grid-cols-[auto_1fr_auto] gap-4 mt-4 overflow-hidden printable-area">
-        <div className="h-full overflow-hidden no-print md:block hidden"> {/* Hide PlayerList on small screens when timeline is main focus */}
+        <div className="h-full overflow-hidden no-print md:block hidden">
            <PlayerList
             players={players}
             onAddPlayer={addPlayer}
@@ -115,7 +115,6 @@ export default function CourtCommanderPage() {
             onDropInPlayerList={handleDropInPlayerList}
           />
         </div>
-        {/* PlayerList for mobile/small screens shown differently or via a drawer - for now same as md for simplicity */}
          <div className="h-full overflow-hidden md:hidden no-print">
            <PlayerList
             players={players}
@@ -134,6 +133,7 @@ export default function CourtCommanderPage() {
             allPlayers={players}
             onPlayerDrop={handlePlayerDropOnTimeline}
             onPlayerDragStart={handlePlayerDragStart}
+            onUpdatePlayerMinutes={updatePlayerMinutesInSlot} // Added this
           />
         </div>
         

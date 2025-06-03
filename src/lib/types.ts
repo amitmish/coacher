@@ -1,3 +1,4 @@
+
 export interface Player {
   id: string;
   name: string;
@@ -5,20 +6,25 @@ export interface Player {
   position?: string;
 }
 
-// Represents 5 player IDs (string) or null if a slot is empty.
-export type OnCourtPlayers = [
-  string | null,
-  string | null,
-  string | null,
-  string | null,
-  string | null
+export interface PlayerTimeSlot {
+  playerId: string | null;
+  minutes: number;
+}
+
+// Represents 5 player time slots
+export type OnCourtPlayerSlots = [
+  PlayerTimeSlot,
+  PlayerTimeSlot,
+  PlayerTimeSlot,
+  PlayerTimeSlot,
+  PlayerTimeSlot
 ];
 
 export interface QuarterSchedule {
-  Q1: OnCourtPlayers;
-  Q2: OnCourtPlayers;
-  Q3: OnCourtPlayers;
-  Q4: OnCourtPlayers;
+  Q1: OnCourtPlayerSlots;
+  Q2: OnCourtPlayerSlots;
+  Q3: OnCourtPlayerSlots;
+  Q4: OnCourtPlayerSlots;
 }
 
 export type QuarterKey = keyof QuarterSchedule;
