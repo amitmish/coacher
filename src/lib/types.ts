@@ -34,7 +34,7 @@ export type QuarterKey = keyof QuarterSchedule;
 
 export const QUARTERS: QuarterKey[] = ["Q1", "Q2", "Q3", "Q4"];
 export const PLAYERS_ON_COURT = 5; // This now represents the number of distinct court positions
-export const QUARTER_DURATION_MINUTES = 12;
+export const QUARTER_DURATION_MINUTES = 10;
 
 export interface GamePlan {
   id: string;
@@ -50,3 +50,4 @@ export interface DraggedPlayerInfo {
   sourcePositionIndex?: number; // Index of the court position (0-4)
   sourceSegmentId?: string;     // ID of the specific PlayerTimeSegment being dragged
 }
+
