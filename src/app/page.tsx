@@ -80,7 +80,7 @@ export default function CourtCommanderPage() {
   }
 
   return (
-    <div className="flex flex-col h-screen p-2 sm:p-4 bg-background text-foreground">
+    <div className="flex flex-col min-h-screen p-2 sm:p-4 bg-background text-foreground"> {/* Changed h-screen to min-h-screen */}
       <header className="mb-2 sm:mb-4 no-print">
         <div className="flex items-center space-x-2">
           <InlineBasketballIcon className="h-7 w-7 sm:h-8 sm:w-8 text-primary" />
@@ -136,8 +136,9 @@ export default function CourtCommanderPage() {
       </div>
 
       {/* Desktop Side-by-Side View */}
-      <main className="hidden md:flex flex-grow gap-3 sm:gap-4 mt-3 sm:mt-4 overflow-hidden printable-area">
-        <div className="md:w-72 lg:w-80 md:flex-shrink-0 h-full">
+      {/* Removed overflow-hidden from main to allow page scroll if content is tall */}
+      <main className="hidden md:flex flex-grow gap-3 sm:gap-4 mt-3 sm:mt-4 printable-area">
+        <div className="md:w-72 lg:w-80 md:flex-shrink-0 h-full"> {/* PlayerList wrapper height is relative to main */}
           <PlayerList
             players={players}
             onAddPlayer={addPlayer}
@@ -148,7 +149,8 @@ export default function CourtCommanderPage() {
             getPlayerTotalTime={getPlayerTotalTime}
           />
         </div>
-        <div className="flex-grow overflow-hidden h-full">
+        {/* Removed overflow-hidden and h-full from GameTimeline wrapper to allow it to grow */}
+        <div className="flex-grow"> 
           <GameTimeline
             schedule={schedule}
             allPlayers={players}
@@ -161,4 +163,3 @@ export default function CourtCommanderPage() {
     </div>
   );
 }
-

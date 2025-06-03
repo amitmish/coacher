@@ -44,7 +44,8 @@ export function GameTimeline({
   };
 
   return (
-    <Card className="flex-grow shadow-xl h-full flex flex-col">
+    // Removed h-full and flex-grow from Card, kept flex flex-col
+    <Card className="shadow-xl flex flex-col"> 
       <CardHeader className="p-4 border-b">
         <div className="flex items-center space-x-2">
           <CalendarClock className="h-6 w-6 text-primary" />
@@ -52,11 +53,11 @@ export function GameTimeline({
         </div>
       </CardHeader>
       <CardContent 
-        className="p-4 flex-grow overflow-x-auto"
+        className="p-4 flex-grow overflow-x-auto" // Kept flex-grow for vertical expansion within Card, overflow-x-auto for horizontal quarters
         onDragOver={handleDragOverTimeline}
         onDrop={handleDropOnTimelineBackground}
       >
-        <div className="flex space-x-4 h-full min-w-max pb-2">
+        <div className="flex space-x-4 h-full min-w-max pb-2"> {/* h-full here might be fine if CardContent is flex-grow */}
           {QUARTERS.map((qKey) => (
             <QuarterColumn
               key={qKey}
