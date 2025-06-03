@@ -82,10 +82,11 @@ export function QuarterColumn({
                   onDragOver={(e) => handleDragOverPosition(e, positionIndex)}
                   onDragLeave={handleDragLeavePosition}
                   onDrop={(e) => handleDropOnPosition(e, positionIndex)}
-                  className={`min-h-[4.5rem] border-2 border-dashed rounded-md flex flex-col items-stretch justify-start transition-colors p-1 space-y-1
+                  className={`min-h-[5rem] border-2 border-dashed rounded-md flex flex-col items-stretch justify-start transition-colors p-1.5 space-y-1.5
                     ${draggedOverPosition === positionIndex ? "border-primary bg-primary/10 shadow-inner" : "border-muted-foreground/20 hover:border-accent/70"}
                     ${segmentsInPosition.length > 0 ? "border-solid border-transparent bg-transparent" : ""}`}
                 >
+                  <p className="text-[10px] font-medium text-muted-foreground text-center -mb-0.5">POSITION {positionIndex + 1}</p>
                   {segmentsInPosition.length > 0 ? (
                     segmentsInPosition.map((segment) => {
                       const player = getPlayerById(segment.playerId);
