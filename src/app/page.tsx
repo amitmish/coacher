@@ -12,6 +12,7 @@ import type { DraggedPlayerInfo, QuarterKey } from "@/lib/types";
 export default function CourtCommanderPage() {
   const {
     currentPlan,
+    isLoading, // Use isLoading state
     gamePlans,
     players,
     schedule,
@@ -38,14 +39,14 @@ export default function CourtCommanderPage() {
 
   const handlePlayerDropOnTimeline = (
     targetQuarter: QuarterKey,
-    targetPositionIndex: number, // Changed from targetSlotIndex
+    targetPositionIndex: number,
     draggedInfo: DraggedPlayerInfo
   ) => {
     assignPlayerToPosition(
       draggedInfo.playerId,
       targetQuarter,
       targetPositionIndex,
-      draggedInfo // Pass the whole draggedInfo
+      draggedInfo
     );
   };
 
@@ -68,7 +69,7 @@ export default function CourtCommanderPage() {
     window.print();
   };
   
-  if (!currentPlan) {
+  if (isLoading || !currentPlan) { // Check isLoading or if currentPlan is not yet available
      return (
       <div className="flex flex-col items-center justify-center min-h-screen p-4">
         <InlineBasketballIcon className="h-16 w-16 text-primary mb-4 animate-bounce" />
