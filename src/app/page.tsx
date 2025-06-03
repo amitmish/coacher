@@ -18,9 +18,9 @@ export default function CourtCommanderPage() {
     addPlayer,
     editPlayer,
     deletePlayer,
-    assignPlayerToSlot,
-    unassignPlayerFromSlot,
-    updatePlayerMinutesInSlot, // Added this
+    assignPlayerToPosition,
+    unassignPlayerSegment,
+    updatePlayerMinutesInSegment,
     getPlayerTotalTime,
     saveCurrentGamePlanAs,
     updateGamePlanName,
@@ -38,15 +38,14 @@ export default function CourtCommanderPage() {
 
   const handlePlayerDropOnTimeline = (
     targetQuarter: QuarterKey,
-    targetSlotIndex: number,
+    targetPositionIndex: number, // Changed from targetSlotIndex
     draggedInfo: DraggedPlayerInfo
   ) => {
-    assignPlayerToSlot(
+    assignPlayerToPosition(
       draggedInfo.playerId,
       targetQuarter,
-      targetSlotIndex,
-      draggedInfo.sourceQuarter,
-      draggedInfo.sourceSlotIndex
+      targetPositionIndex,
+      draggedInfo // Pass the whole draggedInfo
     );
   };
 
@@ -57,8 +56,8 @@ export default function CourtCommanderPage() {
       if (!rawData) return;
       const draggedInfo: DraggedPlayerInfo = JSON.parse(rawData);
 
-      if (draggedInfo.sourceQuarter && draggedInfo.sourceSlotIndex !== undefined) {
-        unassignPlayerFromSlot(draggedInfo.sourceQuarter, draggedInfo.sourceSlotIndex);
+      if (draggedInfo.sourceType === 'timeline' && draggedInfo.sourceQuarter && draggedInfo.sourcePositionIndex !== undefined && draggedInfo.sourceSegmentId) {
+        unassignPlayerSegment(draggedInfo.sourceQuarter, draggedInfo.sourcePositionIndex, draggedInfo.sourceSegmentId);
       }
     } catch (error) {
       console.error("Failed to parse dragged data in player list:", error);
@@ -133,7 +132,7 @@ export default function CourtCommanderPage() {
             allPlayers={players}
             onPlayerDrop={handlePlayerDropOnTimeline}
             onPlayerDragStart={handlePlayerDragStart}
-            onUpdatePlayerMinutes={updatePlayerMinutesInSlot} // Added this
+            onUpdatePlayerMinutes={updatePlayerMinutesInSegment}
           />
         </div>
         

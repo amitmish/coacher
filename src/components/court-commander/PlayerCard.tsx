@@ -1,3 +1,4 @@
+
 "use client";
 import type { Player, DraggedPlayerInfo, QuarterKey } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,11 +10,14 @@ interface PlayerCardProps {
   player: Player;
   draggable?: boolean;
   onDragStart?: (e: React.DragEvent<HTMLDivElement>, playerInfo: DraggedPlayerInfo) => void;
+  // Props for when card is on timeline
   sourceQuarter?: QuarterKey;
-  sourceSlotIndex?: number;
+  sourcePositionIndex?: number; // Changed from sourceSlotIndex
+  sourceSegmentId?: string;     // New: ID of the PlayerTimeSegment
+  
   onEdit?: (player: Player) => void;
   onDelete?: (playerId: string) => void;
-  isSmall?: boolean; // For compact display on timeline
+  isSmall?: boolean;
   className?: string;
 }
 
@@ -22,7 +26,8 @@ export function PlayerCard({
   draggable = false,
   onDragStart,
   sourceQuarter,
-  sourceSlotIndex,
+  sourcePositionIndex,
+  sourceSegmentId,
   onEdit,
   onDelete,
   isSmall = false,
@@ -30,16 +35,26 @@ export function PlayerCard({
 }: PlayerCardProps) {
   const handleDragStart = (e: React.DragEvent<HTMLDivElement>) => {
     if (onDragStart) {
-      const dragInfo: DraggedPlayerInfo = { playerId: player.id };
-      if (sourceQuarter !== undefined) dragInfo.sourceQuarter = sourceQuarter;
-      if (sourceSlotIndex !== undefined) dragInfo.sourceSlotIndex = sourceSlotIndex;
+      // Determine sourceType based on provided props
+      const isTimelineSource = sourceQuarter !== undefined && sourcePositionIndex !== undefined && sourceSegmentId !== undefined;
+      
+      const dragInfo: DraggedPlayerInfo = {
+        playerId: player.id,
+        sourceType: isTimelineSource ? 'timeline' : 'list',
+      };
+
+      if (isTimelineSource) {
+        dragInfo.sourceQuarter = sourceQuarter;
+        dragInfo.sourcePositionIndex = sourcePositionIndex;
+        dragInfo.sourceSegmentId = sourceSegmentId;
+      }
       
       onDragStart(e, dragInfo);
       e.dataTransfer.effectAllowed = "move";
     }
   };
 
-  if (isSmall) {
+  if (isSmall) { // Typically for timeline segments
     return (
       <div
         draggable={draggable}
@@ -47,15 +62,17 @@ export function PlayerCard({
         className={`p-2 rounded-md shadow-md bg-card text-card-foreground cursor-grab flex items-center space-x-2 text-xs ${className}`}
         title={`${player.name} ${player.jerseyNumber ? `(#${player.jerseyNumber})` : ''} ${player.position ? `- ${player.position}` : ''}`}
       >
+        {draggable && <GripVertical className="h-4 w-4 text-muted-foreground shrink-0" />}
         <PlayerAvatar name={player.name} />
         <div className="flex-grow truncate">
           <p className="font-medium truncate">{player.name}</p>
-          {player.jerseyNumber && <p className="text-muted-foreground truncate">#{player.jerseyNumber}</p>}
+          {player.jerseyNumber && <p className="text-muted-foreground truncate text-xs">#{player.jerseyNumber}</p>}
         </div>
       </div>
     );
   }
 
+  // Larger card, typically for PlayerList
   return (
     <Card
       draggable={draggable}

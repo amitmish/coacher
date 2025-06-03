@@ -1,10 +1,11 @@
+
 "use client";
 
 import type { Player, DraggedPlayerInfo } from "@/lib/types";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { PlusCircle, Users, GripVertical } from "lucide-react";
+import { PlusCircle, Users } from "lucide-react"; // Removed GripVertical as it's on PlayerCard
 import { PlayerCard } from "./PlayerCard";
 import { PlayerFormDialog } from "./PlayerFormDialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -15,7 +16,7 @@ interface PlayerListProps {
   onEditPlayer: (player: Player) => void;
   onDeletePlayer: (playerId: string) => void;
   onPlayerDragStart: (e: React.DragEvent<HTMLDivElement>, playerInfo: DraggedPlayerInfo) => void;
-  onDropInPlayerList: (e: React.DragEvent<HTMLDivElement>) => void; // To handle drops back to bench
+  onDropInPlayerList: (e: React.DragEvent<HTMLDivElement>) => void;
 }
 
 export function PlayerList({
@@ -53,6 +54,14 @@ export function PlayerList({
     e.dataTransfer.dropEffect = "move";
   };
 
+  const handlePlayerCardDragStart = (e: React.DragEvent<HTMLDivElement>, player: Player) => {
+    const dragInfo: DraggedPlayerInfo = {
+      playerId: player.id,
+      sourceType: 'list', // Explicitly set sourceType
+    };
+    onPlayerDragStart(e, dragInfo);
+  };
+
   return (
     <Card className="w-full md:w-80 shadow-xl h-full flex flex-col">
       <CardHeader className="flex flex-row items-center justify-between p-4 border-b">
@@ -82,7 +91,7 @@ export function PlayerList({
                   key={player.id}
                   player={player}
                   draggable
-                  onDragStart={onPlayerDragStart}
+                  onDragStart={(e) => handlePlayerCardDragStart(e, player)} // Updated to pass only player for specific list drag start
                   onEdit={handleEditPlayer}
                   onDelete={onDeletePlayer}
                 />

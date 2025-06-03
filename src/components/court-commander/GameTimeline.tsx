@@ -1,22 +1,22 @@
 
 "use client";
 
-import type { Player, QuarterSchedule, QuarterKey, DraggedPlayerInfo } from "@/lib/types";
+import type { Player, QuarterSchedule, QuarterKey, DraggedPlayerInfo, OnCourtPositions } from "@/lib/types";
 import { QUARTERS } from "@/lib/types";
 import { QuarterColumn } from "./QuarterColumn";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CalendarClock } from "lucide-react";
 
 interface GameTimelineProps {
-  schedule: QuarterSchedule;
+  schedule: QuarterSchedule; // Remains QuarterSchedule, but its internal structure changed
   allPlayers: Player[];
   onPlayerDrop: (
     targetQuarter: QuarterKey,
-    targetSlotIndex: number,
+    targetPositionIndex: number, // Changed from targetSlotIndex
     draggedInfo: DraggedPlayerInfo
   ) => void;
   onPlayerDragStart: (e: React.DragEvent<HTMLDivElement>, playerInfo: DraggedPlayerInfo) => void;
-  onUpdatePlayerMinutes: (quarterKey: QuarterKey, slotIndex: number, minutes: number) => void; // Added this
+  onUpdatePlayerMinutes: (quarterKey: QuarterKey, positionIndex: number, segmentId: string, minutes: number) => void;
 }
 
 export function GameTimeline({
@@ -24,7 +24,7 @@ export function GameTimeline({
   allPlayers,
   onPlayerDrop,
   onPlayerDragStart,
-  onUpdatePlayerMinutes, // Added this
+  onUpdatePlayerMinutes,
 }: GameTimelineProps) {
   const quarterNames: Record<QuarterKey, string> = {
     Q1: "Quarter 1",
@@ -39,14 +39,8 @@ export function GameTimeline({
   
   const handleDropOnTimelineBackground = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
-    try {
-      const rawData = e.dataTransfer.getData("application/json");
-      if (!rawData) return;
-      // const draggedInfo: DraggedPlayerInfo = JSON.parse(rawData);
-      // Handle unassign if needed here
-    } catch (error) {
-      console.error("Failed to parse dragged data on timeline background:", error);
-    }
+    // No specific action needed for dropping on background for now,
+    // segments are unassigned by dropping on PlayerList
   };
 
   return (
@@ -68,11 +62,11 @@ export function GameTimeline({
               key={qKey}
               quarterKey={qKey}
               quarterName={quarterNames[qKey]}
-              playersOnCourt={schedule[qKey]}
+              courtPositions={schedule[qKey]} // Changed from playersOnCourt to courtPositions
               allPlayers={allPlayers}
               onPlayerDrop={onPlayerDrop}
-              onPlayerDragStartInSlot={onPlayerDragStart}
-              onUpdatePlayerMinutes={onUpdatePlayerMinutes} // Pass down
+              onPlayerDragStartInSegment={onPlayerDragStart} // Changed prop name for clarity
+              onUpdatePlayerMinutes={onUpdatePlayerMinutes}
             />
           ))}
         </div>
