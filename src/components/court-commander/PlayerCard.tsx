@@ -5,24 +5,23 @@ import { QUARTER_DURATION_MINUTES } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { GripVertical, Edit3, Trash2, Shirt } from "lucide-react";
+import { GripVertical, Edit3, Trash2, Shirt, Clock } from "lucide-react";
 import { PlayerAvatar } from "./PlayerAvatar";
 
 interface PlayerCardProps {
   player: Player;
   draggable?: boolean;
   onDragStart?: (e: React.DragEvent<HTMLDivElement>, playerInfo: DraggedPlayerInfo) => void;
-  // Props for when card is on timeline (isSmall = true)
   sourceQuarter?: QuarterKey;
   sourcePositionIndex?: number;
   sourceSegmentId?: string;
-  minutes?: number; // For displaying/editing minutes in small card
-  onMinutesChange?: (minutes: number) => void; // Callback to update minutes
-
+  minutes?: number;
+  onMinutesChange?: (minutes: number) => void;
   onEdit?: (player: Player) => void;
   onDelete?: (playerId: string) => void;
   isSmall?: boolean;
   className?: string;
+  totalPlayingTime?: number; // New prop
 }
 
 export function PlayerCard({
@@ -38,6 +37,7 @@ export function PlayerCard({
   onDelete,
   isSmall = false,
   className = "",
+  totalPlayingTime,
 }: PlayerCardProps) {
   const handleDragStart = (e: React.DragEvent<HTMLDivElement>) => {
     if (onDragStart) {
@@ -92,8 +92,8 @@ export function PlayerCard({
               max={QUARTER_DURATION_MINUTES}
               className="w-12 h-6 text-xs p-1 text-center rounded-sm shadow-sm bg-background"
               aria-label={`Minutes for ${player.name}`}
-              onClick={(e) => e.stopPropagation()} // Prevent drag start on input click
-              onMouseDown={(e) => e.stopPropagation()} // Also good for preventing drag issues
+              onClick={(e) => e.stopPropagation()} 
+              onMouseDown={(e) => e.stopPropagation()} 
             />
             <span className="text-xs text-muted-foreground">min</span>
           </div>
@@ -130,18 +130,25 @@ export function PlayerCard({
           )}
         </div>
       </CardHeader>
-      {(player.jerseyNumber || player.position) && (
-        <CardContent className="p-3 pt-0 text-sm">
-          {player.jerseyNumber && (
-            <div className="flex items-center text-muted-foreground">
-              <Shirt size={14} className="mr-1.5" /> Jersey: {player.jerseyNumber}
+      <CardContent className="p-3 pt-0 text-sm space-y-1">
+          {(player.jerseyNumber || player.position) && (
+            <div>
+              {player.jerseyNumber && (
+                <div className="flex items-center text-muted-foreground">
+                  <Shirt size={14} className="mr-1.5" /> Jersey: {player.jerseyNumber}
+                </div>
+              )}
+              {player.position && (
+                <p className="text-muted-foreground mt-0.5">Position: {player.position}</p>
+              )}
             </div>
           )}
-          {player.position && (
-            <p className="text-muted-foreground mt-0.5">Position: {player.position}</p>
+          {totalPlayingTime !== undefined && (
+            <div className="flex items-center text-primary font-medium">
+              <Clock size={14} className="mr-1.5" /> Total Time: {totalPlayingTime} min
+            </div>
           )}
         </CardContent>
-      )}
     </Card>
   );
 }

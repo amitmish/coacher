@@ -5,7 +5,7 @@ import type { Player, DraggedPlayerInfo } from "@/lib/types";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { PlusCircle, Users } from "lucide-react"; // Removed GripVertical as it's on PlayerCard
+import { PlusCircle, Users } from "lucide-react";
 import { PlayerCard } from "./PlayerCard";
 import { PlayerFormDialog } from "./PlayerFormDialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -17,6 +17,7 @@ interface PlayerListProps {
   onDeletePlayer: (playerId: string) => void;
   onPlayerDragStart: (e: React.DragEvent<HTMLDivElement>, playerInfo: DraggedPlayerInfo) => void;
   onDropInPlayerList: (e: React.DragEvent<HTMLDivElement>) => void;
+  getPlayerTotalTime: (playerId: string) => number; // New prop
 }
 
 export function PlayerList({
@@ -25,7 +26,8 @@ export function PlayerList({
   onEditPlayer,
   onDeletePlayer,
   onPlayerDragStart,
-  onDropInPlayerList
+  onDropInPlayerList,
+  getPlayerTotalTime, // Destructure new prop
 }: PlayerListProps) {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingPlayer, setEditingPlayer] = useState<Player | null>(null);
@@ -57,7 +59,7 @@ export function PlayerList({
   const handlePlayerCardDragStart = (e: React.DragEvent<HTMLDivElement>, player: Player) => {
     const dragInfo: DraggedPlayerInfo = {
       playerId: player.id,
-      sourceType: 'list', // Explicitly set sourceType
+      sourceType: 'list', 
     };
     onPlayerDragStart(e, dragInfo);
   };
@@ -91,9 +93,10 @@ export function PlayerList({
                   key={player.id}
                   player={player}
                   draggable
-                  onDragStart={(e) => handlePlayerCardDragStart(e, player)} // Updated to pass only player for specific list drag start
+                  onDragStart={(e) => handlePlayerCardDragStart(e, player)}
                   onEdit={handleEditPlayer}
                   onDelete={onDeletePlayer}
+                  totalPlayingTime={getPlayerTotalTime(player.id)} // Pass total time
                 />
               ))}
             </div>
