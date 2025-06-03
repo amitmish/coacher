@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { GripVertical, Edit3, Trash2, Clock, CheckCircle2 } from "lucide-react"; // Added CheckCircle2
 import { PlayerAvatar } from "./PlayerAvatar";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"; // Added Tooltip components
+import { cn } from "@/lib/utils";
 
 interface PlayerCardProps {
   player: Player;
@@ -110,7 +111,12 @@ export function PlayerCard({
     <Card
       draggable={draggable}
       onDragStart={handleDragStart}
-      className={`mb-2 shadow-md hover:shadow-lg transition-shadow ${draggable ? "cursor-grab" : ""} ${className}`}
+      className={cn(
+        "mb-2 shadow-md hover:shadow-lg transition-shadow",
+        draggable ? "cursor-grab" : "",
+        isOnCourt ? "bg-primary/10 border-primary/40" : "bg-card",
+        className
+      )}
     >
       <CardHeader className="p-2 sm:p-3 flex flex-row items-center justify-between space-x-1 sm:space-x-2">
         <div className="flex items-center space-x-2 flex-grow min-w-0">
