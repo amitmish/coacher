@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -8,32 +9,32 @@ body {
 
 @layer base {
   :root {
-    --background: 220 10% 96%; /* Light Gray #F0F0F0 was 0 0% 94.1%; adjusted for better HSL mapping */
-    --foreground: 240 10% 3.9%;
+    --background: 210 40% 98%; /* New: Very light, cool gray/blue */
+    --foreground: 210 10% 23%; /* New: Darker, desaturated blue for text */
     --card: 0 0% 100%;
-    --card-foreground: 240 10% 3.9%;
+    --card-foreground: 210 10% 23%; /* Adjusted to match new foreground */
     --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 3.9%;
-    --primary: 33 100% 50%; /* Vibrant Orange #FF8C00 */
-    --primary-foreground: 0 0% 100%; /* White for contrast on orange */
-    --secondary: 240 4.8% 95.9%;
-    --secondary-foreground: 240 5.9% 10%;
-    --muted: 240 4.8% 95.9%;
-    --muted-foreground: 240 3.8% 46.1%;
-    --accent: 217 100% 56.1%; /* Deep Blue #1E90FF */
-    --accent-foreground: 0 0% 100%; /* White for contrast on blue */
+    --popover-foreground: 210 10% 23%; /* Adjusted to match new foreground */
+    --primary: 200 80% 50%;   /* New: Vibrant, professional blue */
+    --primary-foreground: 0 0% 100%; /* White for contrast on primary */
+    --secondary: 210 30% 94%; /* Adjusted slightly */
+    --secondary-foreground: 210 10% 30%; /* Adjusted slightly */
+    --muted: 210 30% 94%; /* Adjusted slightly */
+    --muted-foreground: 210 10% 45%; /* Adjusted slightly */
+    --accent: 160 70% 40%;    /* New: Teal/green accent */
+    --accent-foreground: 0 0% 100%; /* White for contrast on accent */
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
-    --border: 240 5.9% 90%;
-    --input: 240 5.9% 90%;
-    --ring: 217 100% 56.1%; /* Accent color for rings */
+    --border: 210 20% 88%; /* Adjusted slightly */
+    --input: 210 20% 88%; /* Adjusted slightly */
+    --ring: 200 80% 50%; /* New: Primary color for rings */
     --chart-1: 12 76% 61%;
     --chart-2: 173 58% 39%;
     --chart-3: 197 37% 24%;
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
     --radius: 0.5rem;
-    --sidebar-background: 0 0% 98%;
+    --sidebar-background: 0 0% 98%; /* Keeping sidebar distinct for now */
     --sidebar-foreground: 240 5.3% 26.1%;
     --sidebar-primary: 240 5.9% 10%;
     --sidebar-primary-foreground: 0 0% 98%;
@@ -44,31 +45,31 @@ body {
   }
 
   .dark {
-    --background: 240 10% 3.9%;
-    --foreground: 0 0% 98%;
-    --card: 240 10% 3.9%;
-    --card-foreground: 0 0% 98%;
-    --popover: 240 10% 3.9%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 33 100% 50%; /* Vibrant Orange #FF8C00 */
+    --background: 210 20% 10%; /* New: Dark cool gray/blue */
+    --foreground: 210 40% 90%; /* New: Light, slightly desaturated blue for text */
+    --card: 210 20% 10%; /* Adjusted to match new background */
+    --card-foreground: 210 40% 90%; /* Adjusted to match new foreground */
+    --popover: 210 20% 10%; /* Adjusted to match new background */
+    --popover-foreground: 210 40% 90%; /* Adjusted to match new foreground */
+    --primary: 200 70% 55%;   /* New: Slightly lighter, professional blue for dark mode */
     --primary-foreground: 0 0% 100%;
-    --secondary: 240 3.7% 15.9%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 240 3.7% 15.9%;
-    --muted-foreground: 240 5% 64.9%;
-    --accent: 217 100% 56.1%; /* Deep Blue #1E90FF */
+    --secondary: 210 15% 20%; /* Adjusted slightly */
+    --secondary-foreground: 210 40% 80%; /* Adjusted slightly */
+    --muted: 210 15% 20%; /* Adjusted slightly */
+    --muted-foreground: 210 20% 60%; /* Adjusted slightly */
+    --accent: 160 60% 45%;    /* New: Teal/green accent for dark mode */
     --accent-foreground: 0 0% 100%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
-    --border: 240 3.7% 15.9%;
-    --input: 240 3.7% 15.9%;
-    --ring: 217 100% 56.1%; /* Accent color for rings */
+    --border: 210 15% 25%; /* Adjusted slightly */
+    --input: 210 15% 25%; /* Adjusted slightly */
+    --ring: 200 70% 55%; /* New: Primary color for rings (dark mode) */
     --chart-1: 220 70% 50%;
     --chart-2: 160 60% 45%;
     --chart-3: 30 80% 55%;
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
-    --sidebar-background: 240 5.9% 10%;
+    --sidebar-background: 240 5.9% 10%; /* Keeping sidebar distinct for now */
     --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 224.3 76.3% 48%;
     --sidebar-primary-foreground: 0 0% 100%;
